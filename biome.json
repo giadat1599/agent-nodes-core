@@ -7,7 +7,8 @@
 		"defaultBranch": "main"
 	},
 	"files": {
-		"ignoreUnknown": false
+		"ignoreUnknown": false,
+		"includes": ["**", "!src/drizzle/migrations", "!bun.lock"]
 	},
 	"formatter": {
 		"enabled": true,
