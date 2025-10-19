@@ -20,10 +20,3 @@ export const auth = betterAuth({
 	},
 	trustedOrigins: ["http://localhost:5173"],
 })
-
-type Auth = NonNullable<Awaited<ReturnType<typeof auth.api.getSession>>>
-
-export type AuthType = {
-	user: Auth["user"] | null
-	session: Auth["session"] | null
-}

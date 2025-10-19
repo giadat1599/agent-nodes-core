@@ -1,0 +1,6 @@
+procs:
+  inngest:
+    cmd: ["bun", "run", "inngest:dev"]
+  
+  app:
+    cmd: ["bun", "run", "dev"]
