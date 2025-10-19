@@ -2,12 +2,17 @@ import { Hono } from "hono"
 import "./env"
 
 import { cors } from "hono/cors"
-import { type AuthType, auth } from "./lib/auth"
+import { serve } from "inngest/hono"
+import type { Context } from "./context"
+import { inngest } from "./inngest/client"
+import { functions } from "./inngest/functions"
+import { auth } from "./lib/auth"
+import { workflowRouter } from "./routes/workflow"
 
-const app = new Hono<{ Variables: AuthType }>()
+const app = new Hono<Context>()
 
 app.use(
-	"/api/auth/*",
+	"*",
 	cors({
 		origin: "http://localhost:5173",
 		allowHeaders: ["Content-Type", "Authorization"],
@@ -30,19 +35,10 @@ app.use("*", async (c, next) => {
 	return next()
 })
 
-app.on(["POST", "GET"], "/api/auth/*", (c) => {
-	return auth.handler(c.req.raw)
-})
-
-app.get("/session", (c) => {
-	const session = c.get("session")
-	const user = c.get("user")
-
-	if (!user) return c.body(null, 401)
-	return c.json({
-		session,
-		user,
-	})
-})
+app
+	.basePath("/api")
+	.all("/inngest", serve({ client: inngest, functions }))
+	.on(["POST", "GET"], "/auth/*", (c) => auth.handler(c.req.raw))
+	.route("/workflows", workflowRouter)
 
 export default app
