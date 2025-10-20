@@ -6,6 +6,10 @@ const envSchema = z.object({
 	BETTER_AUTH_SECRET: z.string(),
 	GITHUB_CLIENT_ID: z.string(),
 	GITHUB_CLIENT_SECRET: z.string(),
+	// TODO: testing, will remove later
+	GOOGLE_GENERATIVE_AI_API_KEY: z.string(),
+	ANTHROPIC_API_KEY: z.string(),
+	OPENAI_API_KEY: z.string(),
 })
 
 type Env = z.infer<typeof envSchema>

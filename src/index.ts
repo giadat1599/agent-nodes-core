@@ -2,11 +2,11 @@ import { Hono } from "hono"
 import "./env"
 
 import { cors } from "hono/cors"
-import { serve } from "inngest/hono"
 import type { Context } from "./context"
 import { inngest } from "./inngest/client"
-import { functions } from "./inngest/functions"
 import { auth } from "./lib/auth"
+import { authRouter } from "./routes/auth"
+import { inngestRouter } from "./routes/inngest"
 import { workflowRouter } from "./routes/workflow"
 
 const app = new Hono<Context>()
@@ -37,8 +37,15 @@ app.use("*", async (c, next) => {
 
 app
 	.basePath("/api")
-	.all("/inngest", serve({ client: inngest, functions }))
-	.on(["POST", "GET"], "/auth/*", (c) => auth.handler(c.req.raw))
+	.route("/auth", authRouter)
+	.route("/inngest", inngestRouter)
 	.route("/workflows", workflowRouter)
+	.post("/test-ai", async (c) => {
+		await inngest.send({
+			name: "execute/ai",
+		})
+
+		return c.json({ success: true, message: "AI execution started" })
+	})
 
 export default app

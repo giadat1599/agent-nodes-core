@@ -1,3 +1,3 @@
-import { helloWorld } from "./hello-world"
+import { execute } from "./execute-ai"
 
-export const functions = [helloWorld]
+export const functions = [execute]
