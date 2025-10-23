@@ -15,6 +15,13 @@
       "when": 1760789402007,
       "tag": "0001_thin_toxin",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1761207859953,
+      "tag": "0002_useful_madame_hydra",
+      "breakpoints": true
     }
   ]
 }
