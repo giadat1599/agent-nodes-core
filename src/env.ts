@@ -1,6 +1,7 @@
 import { type ZodError, z } from "zod"
 
 const envSchema = z.object({
+	NODE_ENV: z.string(),
 	DATABASE_URL: z.url(),
 	BETTER_AUTH_URL: z.url(),
 	BETTER_AUTH_SECRET: z.string(),

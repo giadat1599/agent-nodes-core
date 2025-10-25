@@ -1,15 +1,18 @@
 import { Hono } from "hono"
+import { HTTPException } from "hono/http-exception"
 import "./env"
 
 import { cors } from "hono/cors"
-import type { Context } from "./context"
-import { inngest } from "./inngest/client"
+import type { AppContext } from "./context"
+import env from "./env"
+
 import { auth } from "./lib/auth"
 import { authRouter } from "./routes/auth"
 import { inngestRouter } from "./routes/inngest"
 import { workflowRouter } from "./routes/workflow"
+import type { ErrorResponse } from "./types/response"
 
-const app = new Hono<Context>()
+const app = new Hono<AppContext>()
 
 app.use(
 	"*",
@@ -35,17 +38,29 @@ app.use("*", async (c, next) => {
 	return next()
 })
 
-app
-	.basePath("/api")
-	.route("/auth", authRouter)
-	.route("/inngest", inngestRouter)
-	.route("/workflows", workflowRouter)
-	.post("/test-ai", async (c) => {
-		await inngest.send({
-			name: "execute/ai",
-		})
+app.basePath("/api").route("/auth", authRouter).route("/inngest", inngestRouter).route("/workflows", workflowRouter)
 
-		return c.json({ success: true, message: "AI execution started" })
-	})
+app.onError((err, c) => {
+	if (err instanceof HTTPException) {
+		const errResponse =
+			err.res ??
+			c.json<ErrorResponse>(
+				{
+					success: false,
+					errors: [err.message],
+				},
+				err.status,
+			)
+		return errResponse
+	}
+
+	return c.json<ErrorResponse>(
+		{
+			success: false,
+			errors: [env.NODE_ENV === "production" ? "Interal Server Error" : (err.stack ?? err.message)],
+		},
+		500,
+	)
+})
 
 export default app
