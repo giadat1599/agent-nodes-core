@@ -1,0 +1,1 @@
+CREATE INDEX "workflow_user_id_name_idx" ON "workflow" USING btree ("user_id","name");

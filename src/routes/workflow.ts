@@ -1,25 +1,38 @@
 /** biome-ignore-all lint/style/noNonNullAssertion: <handled by requireAuth middleware> */
 
-import { and, eq } from "drizzle-orm"
+import { and, count, eq, ilike } from "drizzle-orm"
 import { Hono } from "hono"
 import { HTTPException } from "hono/http-exception"
 import type { AppContext } from "../context"
 import { db } from "../drizzle"
 import { workflow } from "../drizzle/schemas"
 import { requireAuth } from "../middlewares/require-auth"
+import { createPagination } from "../utils/create-pagination"
+import { toPaginatedResponse } from "../utils/to-paginated-response"
 import { toSuccessResponse } from "../utils/to-success-response"
 import { validator } from "../utils/validator"
-
-import { createWorkflowSchema, updateWorkflowSchema } from "../validations/workflow"
+import { createWorkflowSchema, getWorkflowsQuerySchema, updateWorkflowSchema } from "../validations/workflow"
 
 export const workflowRouter = new Hono<AppContext>()
 	.use("*", requireAuth)
-	.get("/", async (c) => {
-		const workflows = await db.query.workflow.findMany({
-			where: eq(workflow.userId, c.get("user")!.id),
-		})
+	.get("/", validator("query", getWorkflowsQuerySchema), async (c) => {
+		const { search_text, page, pageSize } = c.req.valid("query")
 
-		return toSuccessResponse(workflows, c)
+		const whereCondition = and(
+			eq(workflow.userId, c.get("user")!.id),
+			search_text ? ilike(workflow.name, `%${search_text}%`) : undefined,
+		)
+
+		const [data, [{ count: totalCount }]] = await Promise.all([
+			db.query.workflow.findMany({
+				where: and(whereCondition),
+				orderBy: (workflow, { desc }) => [desc(workflow.updatedAt), desc(workflow.createdAt)],
+				...createPagination(page, pageSize),
+			}),
+			db.select({ count: count() }).from(workflow).where(whereCondition),
+		])
+
+		return toPaginatedResponse(data, { page, pageSize, totalCount }, c)
 	})
 	.get("/:id", async (c) => {
 		const userId = c.get("user")!.id
