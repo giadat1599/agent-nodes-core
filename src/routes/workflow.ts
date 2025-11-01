@@ -5,7 +5,7 @@ import { Hono } from "hono"
 import { HTTPException } from "hono/http-exception"
 import type { AppContext } from "../context"
 import { db } from "../drizzle"
-import { workflow } from "../drizzle/schemas"
+import { node, workflow } from "../drizzle/schemas"
 import { requireAuth } from "../middlewares/require-auth"
 import { createPagination } from "../utils/create-pagination"
 import { toPaginatedResponse } from "../utils/to-paginated-response"
@@ -38,11 +38,13 @@ export const workflowRouter = new Hono<AppContext>()
 		const userId = c.get("user")!.id
 		const workflowId = c.req.param("id")
 
-		const [foundWorkflow] = await db
-			.select()
-			.from(workflow)
-			.where(and(eq(workflow.id, workflowId), eq(workflow.userId, userId)))
-			.limit(1)
+		const foundWorkflow = await db.query.workflow.findFirst({
+			where: and(eq(workflow.id, workflowId), eq(workflow.userId, userId)),
+			with: {
+				nodes: true,
+				connections: true,
+			},
+		})
 
 		if (!foundWorkflow) {
 			throw new HTTPException(404, { message: "Workflow not found" })
@@ -72,6 +74,13 @@ export const workflowRouter = new Hono<AppContext>()
 				userId: c.get("user")!.id,
 			})
 			.returning()
+
+		await db.insert(node).values({
+			workflowId: createdWorkflow.id,
+			type: "initial",
+			name: "Initial",
+			position: { x: 0, y: 0 },
+		})
 
 		return toSuccessResponse(createdWorkflow, c)
 	})
