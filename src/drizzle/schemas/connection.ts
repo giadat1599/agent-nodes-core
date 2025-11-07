@@ -1,6 +1,6 @@
-import { randomUUID } from "node:crypto"
 import { relations } from "drizzle-orm"
 import { pgTable, text, unique } from "drizzle-orm/pg-core"
+import { v4 as uuidv4 } from "uuid"
 import { timestamps } from "../utils"
 import { node } from "./node"
 import { workflow } from "./workflow"
@@ -10,7 +10,7 @@ export const connection = pgTable(
 	{
 		id: text("id")
 			.primaryKey()
-			.$defaultFn(() => randomUUID()),
+			.$defaultFn(() => uuidv4()),
 		fromNodeId: text("from_node_id")
 			.notNull()
 			.references(() => node.id, { onDelete: "cascade" }),

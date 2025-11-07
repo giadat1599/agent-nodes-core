@@ -1,6 +1,6 @@
-import { randomUUID } from "node:crypto"
 import { type InferSelectModel, relations } from "drizzle-orm"
 import { index, pgTable, text } from "drizzle-orm/pg-core"
+import { v4 as uuidv4 } from "uuid"
 import { timestamps } from "../utils"
 import { user } from "./auth"
 import { connection } from "./connection"
@@ -11,7 +11,7 @@ export const workflow = pgTable(
 	{
 		id: text("id")
 			.primaryKey()
-			.$defaultFn(() => randomUUID()),
+			.$defaultFn(() => uuidv4()),
 		name: text("name").notNull(),
 		userId: text("user_id")
 			.notNull()

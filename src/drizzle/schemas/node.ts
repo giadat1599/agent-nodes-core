@@ -1,16 +1,16 @@
-import { randomUUID } from "node:crypto"
-import { relations } from "drizzle-orm"
+import { type InferSelectModel, relations } from "drizzle-orm"
 import { json, pgEnum, pgTable, text } from "drizzle-orm/pg-core"
+import { v4 as uuidv4 } from "uuid"
 import { timestamps } from "../utils"
 import { connection } from "./connection"
 import { workflow } from "./workflow"
 
-export const nodeType = pgEnum("node_type", ["initial"])
+export const nodeType = pgEnum("node_type", ["initial", "manual_trigger", "http_request"])
 
 export const node = pgTable("node", {
 	id: text("id")
 		.primaryKey()
-		.$defaultFn(() => randomUUID()),
+		.$defaultFn(() => uuidv4()),
 	name: text("name").notNull(),
 	type: nodeType("type").notNull(),
 	position: json("position"),
@@ -26,3 +26,5 @@ export const nodeRelations = relations(node, ({ many, one }) => ({
 	outputConnections: many(connection),
 	inputConnections: many(connection),
 }))
+
+export type NodeType = InferSelectModel<typeof node>["type"]
