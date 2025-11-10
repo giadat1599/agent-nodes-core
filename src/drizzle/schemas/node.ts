@@ -27,4 +27,6 @@ export const nodeRelations = relations(node, ({ many, one }) => ({
 	inputConnections: many(connection),
 }))
 
-export type NodeType = InferSelectModel<typeof node>["type"]
+export type Node = InferSelectModel<typeof node>
+
+export type NodeType = Node["type"]

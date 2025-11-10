@@ -6,6 +6,7 @@ import { HTTPException } from "hono/http-exception"
 import type { AppContext } from "../context"
 import { db } from "../drizzle"
 import { node, workflow } from "../drizzle/schemas"
+import { inngest } from "../inngest/client"
 import { requireAuth } from "../middlewares/require-auth"
 import { createPagination } from "../utils/create-pagination"
 import { toPaginatedResponse } from "../utils/to-paginated-response"
@@ -98,4 +99,20 @@ export const workflowRouter = new Hono<AppContext>()
 		}
 
 		return toSuccessResponse(updatedWorkflow, c)
+	})
+	.post("/:id/execute", async (c) => {
+		const foundWorkflow = await db.query.workflow.findFirst({
+			where: and(eq(workflow.id, c.req.param("id")), eq(workflow.userId, c.get("user")!.id)),
+		})
+
+		if (!foundWorkflow) {
+			throw new HTTPException(404, { message: "Workflow not found" })
+		}
+
+		await inngest.send({
+			name: "workflows/execute.workflow",
+			data: { workflowId: foundWorkflow.id },
+		})
+
+		return toSuccessResponse(foundWorkflow, c)
 	})

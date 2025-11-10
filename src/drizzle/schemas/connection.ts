@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm"
+import { type InferSelectModel, relations } from "drizzle-orm"
 import { pgTable, text, unique } from "drizzle-orm/pg-core"
 import { v4 as uuidv4 } from "uuid"
 import { timestamps } from "../utils"
@@ -38,3 +38,5 @@ export const connectionRelations = relations(connection, ({ one }) => ({
 	}),
 	workflow: one(workflow, { fields: [connection.workflowId], references: [workflow.id] }),
 }))
+
+export type Connection = InferSelectModel<typeof connection>
