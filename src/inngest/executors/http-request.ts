@@ -4,6 +4,8 @@ import type { NodeExecutor } from "../../types/executions"
 
 import Handlebars = require("handlebars")
 
+import { httpRequestChannel } from "../channels/http-request"
+
 Handlebars.registerHelper("json", (context) => JSON.stringify(context, null, 2))
 
 type HttpRequestData = {
@@ -13,42 +15,67 @@ type HttpRequestData = {
 	body?: string
 }
 
-export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({ context, step, data }) => {
-	if (!data.endpoint) {
-		throw new NonRetriableError("No endpoint provided for HTTP request")
-	}
-	if (!data.variableName) {
-		throw new NonRetriableError("No variableName provided for HTTP request")
-	}
+export const httpRequestExecutor: NodeExecutor<HttpRequestData> = async ({ context, nodeId, step, data, publish }) => {
+	await publish(
+		httpRequestChannel().status({
+			nodeId,
+			status: "loading",
+		}),
+	)
 
-	if (!data.method) {
-		throw new NonRetriableError("No method provided for HTTP request")
-	}
-
-	const result = await step.run("http-request", async () => {
-		const endpoint = Handlebars.compile(data.endpoint)(context)
-		const method = data.method
-		const options: FetchOptions = { method }
-
-		if (["POST", "PUT", "PATCH"].includes(method) && data.body) {
-			const resolved = Handlebars.compile(data.body || "{}")(context)
-			JSON.parse(resolved)
-			options.body = resolved
+	try {
+		if (!data.endpoint) {
+			throw new NonRetriableError("No endpoint provided for HTTP request")
 		}
-		const response = await ofetch.raw(endpoint, options)
-
-		const responsePayload = {
-			httpResponse: {
-				status: response.status,
-				statusText: response.statusText,
-				data: response._data,
-			},
+		if (!data.variableName) {
+			throw new NonRetriableError("No variableName provided for HTTP request")
 		}
 
-		return {
-			...context,
-			[data.variableName]: responsePayload,
+		if (!data.method) {
+			throw new NonRetriableError("No method provided for HTTP request")
 		}
-	})
-	return result
+
+		const result = await step.run("http-request", async () => {
+			const endpoint = Handlebars.compile(data.endpoint)(context)
+			const method = data.method
+			const options: FetchOptions = { method }
+
+			if (["POST", "PUT", "PATCH"].includes(method) && data.body) {
+				const resolved = Handlebars.compile(data.body || "{}")(context)
+				JSON.parse(resolved)
+				options.body = resolved
+			}
+			const response = await ofetch.raw(endpoint, options)
+
+			const responsePayload = {
+				httpResponse: {
+					status: response.status,
+					statusText: response.statusText,
+					data: response._data,
+				},
+			}
+
+			await publish(
+				httpRequestChannel().status({
+					nodeId,
+					status: "success",
+				}),
+			)
+
+			return {
+				...context,
+				[data.variableName]: responsePayload,
+			}
+		})
+
+		return result
+	} catch (error) {
+		await publish(
+			httpRequestChannel().status({
+				nodeId,
+				status: "error",
+			}),
+		)
+		throw error
+	}
 }
