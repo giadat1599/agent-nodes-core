@@ -21,7 +21,7 @@ export const nodeRouter = new Hono<AppContext>()
 		})
 
 		if (!foundWorkflow) {
-			throw new HTTPException(404, { message: "Workflow not found" })
+			throw new HTTPException(404, { message: "Workflow not found." })
 		}
 
 		const updatedWorkflow = await db.transaction(async (tx) => {

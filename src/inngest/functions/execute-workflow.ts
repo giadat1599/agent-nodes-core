@@ -7,9 +7,9 @@ import { inngest } from "../client"
 import { getExecutor } from "../executor-registry"
 
 export const executeWorkflow = inngest.createFunction(
-	{ id: "execute-workflow" },
+	{ id: "execute-workflow", retries: 0 },
 	{ event: "workflows/execute.workflow" },
-	async ({ step, event }) => {
+	async ({ step, event, publish }) => {
 		const workflowId = event.data?.workflowId
 
 		if (!workflowId) {
@@ -43,6 +43,7 @@ export const executeWorkflow = inngest.createFunction(
 				nodeId: node.id,
 				context,
 				step,
+				publish,
 			})
 		}
 		return {
