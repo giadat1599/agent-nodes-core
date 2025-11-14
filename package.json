@@ -16,6 +16,7 @@
 		"@ai-sdk/google": "^2.0.23",
 		"@ai-sdk/openai": "^2.0.52",
 		"@hono/zod-validator": "^0.7.4",
+		"@inngest/realtime": "^0.4.5",
 		"@neondatabase/serverless": "^1.0.2",
 		"ai": "^5.0.76",
 		"better-auth": "^1.3.27",
