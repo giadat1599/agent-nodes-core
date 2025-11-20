@@ -14,3 +14,7 @@ export const getWorkflowsQuerySchema = z.object({
 	page: z.coerce.number().optional().default(PAGINATION.DEFAULT_PAGE),
 	pageSize: z.coerce.number().optional().default(PAGINATION.DEFAULT_PAGE_SIZE),
 })
+
+export const workFlowIdQuerySchema = z.object({
+	workflowId: z.string().min(1, "Workflow ID is required"),
+})

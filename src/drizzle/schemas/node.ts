@@ -5,7 +5,7 @@ import { timestamps } from "../utils"
 import { connection } from "./connection"
 import { workflow } from "./workflow"
 
-export const nodeType = pgEnum("node_type", ["initial", "manual_trigger", "http_request"])
+export const nodeType = pgEnum("node_type", ["initial", "manual_trigger", "http_request", "google_form_trigger"])
 
 export const node = pgTable("node", {
 	id: text("id")

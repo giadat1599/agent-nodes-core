@@ -1,5 +1,6 @@
 import type { NodeType } from "../drizzle/schemas"
 import type { NodeExecutor } from "../types/executions"
+import { googleFormTrigger } from "./executors/google-form-trigger"
 import { httpRequestExecutor } from "./executors/http-request"
 import { manualTriggerExecutor } from "./executors/manual-trigger"
 
@@ -7,6 +8,7 @@ export const executorRegistry: Record<NodeType, NodeExecutor<any>> = {
 	manual_trigger: manualTriggerExecutor,
 	initial: manualTriggerExecutor,
 	http_request: httpRequestExecutor,
+	google_form_trigger: googleFormTrigger,
 }
 
 export function getExecutor(type: NodeType): NodeExecutor {

@@ -10,6 +10,7 @@ import { auth } from "./lib/auth"
 import { authRouter } from "./routes/auth"
 import { inngestRouter } from "./routes/inngest"
 import { nodeRouter } from "./routes/node"
+import { webhookRouter } from "./routes/webhook"
 import { workflowRouter } from "./routes/workflow"
 import type { ErrorResponse } from "./types/response"
 
@@ -45,6 +46,7 @@ app
 	.route("/inngest", inngestRouter)
 	.route("/workflows", workflowRouter)
 	.route("/nodes", nodeRouter)
+	.route("/webhooks", webhookRouter)
 
 app.onError((err, c) => {
 	if (err instanceof HTTPException) {
