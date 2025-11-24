@@ -1,9 +1,14 @@
 import type { NodeExecutor } from "../../types/executions"
 import { googleFormTriggerChannel } from "../channels/google-form-trigger"
 
-type GoogleFormTrigger = Record<string, unknown>
+type GoogleFormTriggerData = Record<string, unknown>
 
-export const googleFormTrigger: NodeExecutor<GoogleFormTrigger> = async ({ context, step, publish, nodeId }) => {
+export const googleFormTriggerExecutor: NodeExecutor<GoogleFormTriggerData> = async ({
+	context,
+	step,
+	publish,
+	nodeId,
+}) => {
 	await publish(
 		googleFormTriggerChannel().status({
 			nodeId,
